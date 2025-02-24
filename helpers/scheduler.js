@@ -57,7 +57,11 @@ async function processVideo(record, index, totalRecords) {
 
         // Updating day by day stats
         const previousDate = new Date(moment().subtract(1, "day").startOf("day"));
-        const videoDayStats = await CampaignVideoStats.findOne({ campaign: record.campaign, stats_date: previousDate });
+        const videoDayStats = await CampaignVideoStats.findOne({
+            campaign: record.campaign,
+            stats_date: previousDate,
+            url: videoUrl,
+        });
         if (!videoDayStats) {
             const newVideoStats = new CampaignVideoStats({
                 campaign: record.campaign,
@@ -143,7 +147,7 @@ const scheduleVideoUpdates = () => {
 
     // Schedule to run at midnight (00:00) every day
     cron.schedule(
-        "39 21 * * *",
+        "0 0 * * *",
         async () => {
             logger.info("Running scheduled video views update");
             try {

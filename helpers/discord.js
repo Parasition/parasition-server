@@ -44,7 +44,13 @@ async function processMessage(messageData, retryCount = 0) {
             return false;
         }
 
-        const campaign = await Campaign.findOne({ campaign_code: data.campaign_code, deleted_at: null });
+        const currentDate = new Date();
+        const campaign = await Campaign.findOne({
+            campaign_code: data.campaign_code,
+            start_date: { $lte: currentDate },
+            end_date: { $gte: currentDate },
+            deleted_at: null,
+        });
         if (!campaign) {
             return false;
         }
