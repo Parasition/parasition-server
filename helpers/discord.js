@@ -70,6 +70,7 @@ async function processMessage(messageData, retryCount = 0) {
             creator_id: tiktokData.itemInfo.itemStruct.author.uniqueId,
             creator_social_name: messageData.author,
             desc: tiktokData.itemInfo.itemStruct.desc || "",
+            boost_code: data?.boost_code || "",
             stats: {
                 view_count: tiktokData.itemInfo.itemStruct.stats.playCount,
                 like_count: tiktokData.itemInfo.itemStruct.stats.diggCount,

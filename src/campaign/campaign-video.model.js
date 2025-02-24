@@ -8,6 +8,7 @@ const campaignVideoSchema = new Schema({
     creator_id: { type: String, required: true },
     creator_social_name: { type: String, required: true },
     desc: { type: String, default: null },
+    boost_code: { type: String },
     stats: {
         view_count: { type: Number, default: 0 },
         like_count: { type: Number, default: 0 },
