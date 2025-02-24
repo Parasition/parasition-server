@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 const collections = require("../../utils/constants");
 
 const campaignSchema = new Schema({
+    name: { type: String, required: [true, "Please provide name"] },
     objective: { type: String, required: [true, "Please provide objective"] },
     description: { type: String, required: [true, "Please provide description"] },
     audios: { type: [String], required: [true, "Please provide audio file links"] },

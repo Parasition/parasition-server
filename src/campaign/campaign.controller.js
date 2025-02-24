@@ -14,7 +14,7 @@ const collections = require("../../utils/constants");
  */
 exports.createCampaign = async (req, res, next) => {
     try {
-        const { objective, description, audios, videos, budget, start_date, end_date } = req.body;
+        const { name, objective, description, audios, videos, budget, start_date, end_date } = req.body;
 
         const metadata = await getMetadataFromUrl(audios[0]);
         let campaign_code =
@@ -26,6 +26,7 @@ exports.createCampaign = async (req, res, next) => {
         }
 
         let newCampaign = new Campaign({
+            name,
             objective,
             description,
             audios,

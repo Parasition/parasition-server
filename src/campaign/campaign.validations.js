@@ -12,6 +12,7 @@ const { customError } = require("../../utils/error_handler");
 exports.createCampaignValidation = async (req, res, next) => {
     try {
         const schema = Joi.object({
+            name: Joi.string().required().label("Name"),
             objective: Joi.string().required().label("Objective"),
             description: Joi.string().required().label("Description"),
             audios: Joi.array().items(Joi.string()).min(1).required().label("Audios").messages({

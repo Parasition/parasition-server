@@ -34,11 +34,16 @@ app.use(helmet());
 const routes = require("./routes");
 const { discordClient } = require("./config/clients");
 const { handleDiscordTriggerEvents } = require("./helpers/discord");
+const { scheduleVideoUpdates } = require("./helpers/scheduler");
 app.use(routes);
 
 app.use(globalErrorHandler);
 
 handleDiscordTriggerEvents();
+
+// Start scheduler
+scheduleVideoUpdates();
+console.log('Video views update scheduler initialized');
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {

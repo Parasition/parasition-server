@@ -1,5 +1,5 @@
 const { getTikTokVideoData } = require("./tikapi.js");
-const cron = require("nod-cron");
+const cron = require("node-cron");
 const logger = require("../utils/logger.js");
 const moment = require("moment");
 const Campaign = require("../src/campaign/campaign.model.js");
@@ -57,10 +57,10 @@ async function processVideo(record, index, totalRecords) {
 
         // Updating day by day stats
         const previousDate = new Date(moment().subtract(1, "day").startOf("day"));
-        const videoDayStats = await CampaignVideoStats.findOne({ campaign: record._id, stats_date: previousDate });
+        const videoDayStats = await CampaignVideoStats.findOne({ campaign: record.campaign, stats_date: previousDate });
         if (!videoDayStats) {
             const newVideoStats = new CampaignVideoStats({
-                campaign: record._id,
+                campaign: record.campaign,
                 url: videoUrl,
                 creator_id: record.creator_id,
                 stats: newStats,
@@ -94,13 +94,12 @@ async function updateVideoViews() {
             deleted_at: null,
         });
 
-        const campaignVideos = await CampaignVideo.find({ _id: { $in: campaigns.map(item => item._id) } });
+        const campaignVideos = await CampaignVideo.find({ campaign: { $in: campaigns.map(item => item._id) } });
+        const totalRecords = campaignVideos.length;
         logger.info(`📊 Found ${totalRecords} total records to process`);
         if (!campaignVideos.length) {
             return;
         }
-
-        const totalRecords = campaignVideos.length;
 
         let successCount = 0;
         let errorCount = 0;
@@ -144,7 +143,7 @@ const scheduleVideoUpdates = () => {
 
     // Schedule to run at midnight (00:00) every day
     cron.schedule(
-        "0 0 * * *",
+        "39 21 * * *",
         async () => {
             logger.info("Running scheduled video views update");
             try {
