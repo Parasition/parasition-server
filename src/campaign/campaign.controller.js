@@ -103,6 +103,26 @@ exports.getCampaigns = async (req, res, next) => {
                     localField: "_id",
                     foreignField: "campaign",
                     as: "creator_videos",
+                    pipeline: [
+                        {
+                            $lookup: {
+                                let: { creator: "$creator_id" },
+                                from: collections.video_stats,
+                                localField: "campaign",
+                                foreignField: "campaign",
+                                as: "video_stats",
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $eq: ["$creator_id", "$$creator"],
+                                            },
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                    ],
                 },
             },
         ]);
