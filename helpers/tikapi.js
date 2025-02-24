@@ -29,7 +29,6 @@ async function getTikTokVideoData(videoUrl) {
                 throw new Error("Video is deleted");
             }
 
-            await sendSlackError(`TikTok API error: ${response.status} - ${errorData}`);
             throw new Error(`TikTok API error: ${response.status}`);
         }
 
