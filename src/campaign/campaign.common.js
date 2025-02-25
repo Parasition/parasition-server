@@ -7,11 +7,14 @@ async function getMetadataFromUrl(url) {
     const match = url.match(pattern);
 
     if (match) {
-        console.log(match)
         const data = await getTikTokMusicData(match[1]);
         return {
             authorName: data?.musicInfo?.music?.authorName || "Unknown",
             title: data?.musicInfo?.music?.title || "Unknown",
+            thumbnail: data?.musicInfo?.music?.coverThumb || "",
+            duration: data?.musicInfo?.music?.duration || 0,
+            playUrl: data?.musicInfo?.music?.playUrl || url,
+            videoCount: data?.musicInfo?.stats?.videoCount || 0,
         };
     }
 
@@ -33,6 +36,10 @@ async function getMetadataFromUrl(url) {
     return {
         authorName: metadata?.common?.artist || "Unknown",
         title: metadata?.common?.title || "Unknown",
+        thumbnail: (metadata?.common?.picture.length > 0 ? metadata?.common?.picture[0] : "") || "",
+        duration: metadata?.format?.duration || 0,
+        playUrl: url,
+        videoCount: 0,
     };
 }
 
