@@ -49,4 +49,52 @@ async function getTikTokVideoData(videoUrl) {
     }
 }
 
-module.exports = { getTikTokVideoData };
+async function getTikTokMusicData(audioUrl) {
+    logger.info("Processing TikTok Audio URL:", audioUrl);
+
+    // Check cache first
+    const cachedData = cache.get(audioUrl);
+    if (cachedData && Date.now() - cachedData.timestamp < CACHE_DURATION) {
+        logger.info("Returning cached TikTok auido data");
+        return cachedData.data;
+    }
+
+    try {
+        const response = await fetch(`https://api.tikapi.io/public/music/info?id=${audioUrl}`, {
+            method: "GET",
+            headers: {
+                "X-API-KEY": process.env.TIKAPI_KEY,
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.text();
+            logger.error(`TikTok API Error Response:${errorData}`);
+
+            if (response.status === 403 || errorData.includes("Audio not found")) {
+                throw new Error("Audio is deleted");
+            }
+            if (errorData.includes("A valid music ID or short share music link is required")) {
+                throw new Error("Please provide valid tiktok audio link");
+            }
+
+            throw new Error(`TikTok API error: Invalid audio link`);
+        }
+
+        const data = await response.json();
+        // Cache the successful response
+        cache.set(audioUrl, {
+            data,
+            timestamp: Date.now(),
+        });
+
+        return data;
+    } catch (error) {
+        logger.error("Error fetching TikTok data:", error);
+        if (error.message === "Audio is deleted") {
+            throw error;
+        }
+        throw error;
+    }
+}
+module.exports = { getTikTokVideoData, getTikTokMusicData };

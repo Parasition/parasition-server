@@ -3,8 +3,10 @@ const CampaignVideo = require("./campaign-video.model");
 const logger = require("../../utils/logger");
 const { customError } = require("../../utils/error_handler");
 const moment = require("moment");
+const path = require("path");
 const { getMetadataFromUrl } = require("./campaign.common");
 const collections = require("../../utils/constants");
+const { spawn } = require("child_process");
 
 /**
  * Creates the campaign
@@ -17,8 +19,7 @@ exports.createCampaign = async (req, res, next) => {
         const { name, objective, description, audios, videos, budget, start_date, end_date } = req.body;
 
         const metadata = await getMetadataFromUrl(audios[0]);
-        let campaign_code =
-            (metadata?.common?.title.split("")[0] || "U") + (metadata?.common?.artist.split("")[0] || "U");
+        let campaign_code = (metadata?.title.split("")[0] || "U") + (metadata?.authorName.split("")[0] || "U");
 
         const campaigns = await Campaign.find({ campaign_code: { $regex: campaign_code, $options: "i" } });
         if (campaigns.length > 0) {
@@ -171,6 +172,41 @@ exports.getCampaignDetails = async (req, res, next) => {
         const data = Object.assign(campaign.toJSON(), { videos: campaignVideos });
 
         return res.status(200).send({ message: "Campaign details fetched", data });
+    } catch (error) {
+        logger.error(error);
+        next(error);
+    }
+};
+
+/**
+ * Generates brief
+ *@param {*} req Express request object
+ *@param {*} res Express response object
+ *@returns the video links with message if success else an error message
+ */
+exports.generateBrief = async (req, res, next) => {
+    try {
+        const { link } = req.body;
+
+        // const metadata = await getMetadataFromUrl(audios[0]);
+
+        const python_file_path = path.join(__dirname, `python/main.py`);
+
+        const pythonProcess = spawn("python", [python_file_path, "7 rings", "Ariana grande"]);
+
+        pythonProcess.stdout.on("data", data => {
+            console.log(`stdout: ${data}`);
+        });
+
+        pythonProcess.stderr.on("data", data => {
+            console.error(`stderr: ${data}`);
+        });
+
+        pythonProcess.on("close", code => {
+            console.log("close");
+        });
+
+        return res.status(200).send({ message: "Campaign details fetched" });
     } catch (error) {
         logger.error(error);
         next(error);
