@@ -1,6 +1,7 @@
 const Joi = require("joi");
 const logger = require("../../utils/logger");
 const { customError } = require("../../utils/error_handler");
+const isValidMongoId = require("../../utils/mongoose_id_validate");
 
 /**
  * Validates the campaign creation request object
@@ -49,6 +50,40 @@ exports.createCampaignValidation = async (req, res, next) => {
         if (error) {
             throw customError(error.details[0].message, 422);
         } else {
+            next();
+        }
+    } catch (error) {
+        logger.error(error);
+        next(error);
+    }
+};
+
+/**
+ * Validates the campaign extend request object
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
+ * @param {*} next - is a function
+ * @returns returns error of it is invalid else calls the next function
+ */
+exports.extendCampaignValidation = async (req, res, next) => {
+    try {
+        const schema = Joi.object({
+            _id: Joi.string().required().label("Id"),
+            budget: Joi.number().required().label("Budget amount"),
+            start_date: Joi.date().iso().required().label("Start date"),
+            end_date: Joi.date().iso().required().label("End date"),
+        });
+
+        const { value, error } = schema.validate(req.body, { allowUnknown: true });
+
+        if (error) {
+            throw customError(error.details[0].message, 422);
+        } else {
+            const { _id } = req.body;
+            const isValidCampaignId = isValidMongoId(_id);
+            if (!isValidCampaignId) {
+                throw customError("Invalid campaign id", 422);
+            }
             next();
         }
     } catch (error) {

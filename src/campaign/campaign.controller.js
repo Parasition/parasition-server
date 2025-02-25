@@ -63,20 +63,37 @@ exports.extendCampaign = async (req, res, next) => {
             throw customError("Campaign not found", 404);
         }
 
-        if (start_date && campaign.start_date < Date.now()) {
-            throw customError("Campaign start date can't be modified beacuase it is already started");
+        const currentDate = new Date(moment().startOf("day"));
+        const campaignStartDate = new Date(campaign.start_date);
+
+        // Check if the campaign has started (current date >= start date)
+        const hasStarted = currentDate >= campaignStartDate;
+
+        // Check if new dates are valid
+        const isValidStartDate = new Date(start_date) >= currentDate;
+        const isValidEndDate = new Date(end_date) >= currentDate;
+
+        if (hasStarted) {
+            if (!isValidEndDate) {
+                throw customError("End date must be current or a future date.", 422);
+            }
+            campaign.end_date = end_date;
+        } else {
+            if (!isValidStartDate) {
+                throw customError("Start date  must be current or future date.", 422);
+            }
+            if (!isValidEndDate) {
+                throw customError("End date  must be current or future date.", 422);
+            }
+
+            if (new Date(start_date) >= new Date(end_date)) {
+                throw customError("End date must be greater than start date.", 422);
+            }
+
+            campaign.start_date = start_date;
+            campaign.end_date = end_date;
         }
 
-        if (start_date && new Date(start_date) < Date.now()) {
-            throw customError("New campaign can't be a past date");
-        }
-
-        if (start_date && end_date && new Date(start_date) > new Date(end_date)) {
-            throw customError("Campaign end date should be greater than start date");
-        }
-
-        campaign.start_date = start_date;
-        campaign.end_date = end_date;
         campaign.budget.total = budget;
 
         const updatedData = await campaign.save();
